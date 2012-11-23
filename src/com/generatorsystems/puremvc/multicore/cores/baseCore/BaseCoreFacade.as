@@ -45,5 +45,10 @@ package com.generatorsystems.puremvc.multicore.cores.baseCore
 			registerCommand(GBNotifications.STARTUP, __startupCommand);
 			sendNotification(GBNotifications.STARTUP, __application);
 		}
+		
+		override public function destroy():void
+		{
+			super.destroy();
+		}
 	}
 }

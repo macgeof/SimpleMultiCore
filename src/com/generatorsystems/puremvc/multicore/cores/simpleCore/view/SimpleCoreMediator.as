@@ -38,13 +38,15 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 			super.onRemove();
 			
 			_coreData = null;
+			viewComponent = null;
 		}
 		
 		override public function listNotificationInterests():Array
 		{
 			var __interests:Array = super.listNotificationInterests();
 			__interests.push(
-					GBNotifications.STARTUP_COMPLETE
+					GBNotifications.STARTUP_COMPLETE,
+					PipeConstants.DESTROY_CORE
 				);
 			return __interests;
 		}
@@ -55,6 +57,10 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 			{
 				case GBNotifications.STARTUP_COMPLETE :
 					_initializeView();
+					break;
+				
+				case PipeConstants.DESTROY_CORE :
+					(core as SimpleCore).destroy();
 					break;
 				
 				default :

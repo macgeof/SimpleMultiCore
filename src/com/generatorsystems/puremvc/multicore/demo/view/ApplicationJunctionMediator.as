@@ -1,7 +1,9 @@
 package com.generatorsystems.puremvc.multicore.demo.view
 {
+	import com.gb.puremvc.GBPipeAwareCore;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.pipes.PipeAwareCoreConstants;
+	import com.generatorsystems.puremvc.multicore.cores.model.vo.DisconnectPipeFittingsVO;
 	import com.generatorsystems.puremvc.multicore.demo.ApplicationFacade;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.Cores;
 	import com.generatorsystems.puremvc.multicore.utils.PipeConstants;
@@ -84,6 +86,7 @@ package com.generatorsystems.puremvc.multicore.demo.view
 				{
 					var __message:IPipeMessage = __note.getBody() as IPipeMessage;
 					_sendMessageToCore(__message);
+					break;
 				}
 						
 				default:
@@ -96,24 +99,47 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		
 		protected function _connectCoreToShell(__core:IPipeAware):void
 		{
+			var __coreKey:String = (__core as GBPipeAwareCore).key;
+			var __pipeName:String = PipeAwareCoreConstants.CORE_TO_APP_PIPE + __coreKey;
 			var __coreToShell:Pipe = new Pipe();
 			var __shellIn:TeeMerge = junction.retrievePipe(PipeAwareCoreConstants.CORE_TO_APP_PIPE) as TeeMerge;
 			var __boolSuccess:Boolean = __shellIn.connectInput(__coreToShell);
-			__core.acceptOutputPipe(PipeAwareCoreConstants.CORE_TO_APP_PIPE, __coreToShell);
+			__core.acceptOutputPipe(__pipeName, __coreToShell);
 		}
 		
 		protected function _connectShellToCore(__core:IPipeAware):void
 		{
+			var __coreKey:String = (__core as GBPipeAwareCore).key;
+			var __pipeName:String = PipeAwareCoreConstants.APP_TO_CORE_PIPE + __coreKey;
 			var __shellToCore:Pipe = new Pipe();
-			__core.acceptInputPipe(PipeAwareCoreConstants.APP_TO_CORE_PIPE, __shellToCore);
+			__core.acceptInputPipe(__pipeName, __shellToCore);
 			var __shellOut:IPipeFitting = junction.retrievePipe(PipeAwareCoreConstants.APP_TO_CORE_PIPE) as IPipeFitting;
-			__shellOut.connect(__shellToCore);
+			var __boolSuccess:Boolean = __shellOut.connect(__shellToCore);
 		}
 		
 		protected function _sendMessageToCore(__message:IPipeMessage):void
 		{
 			if (junction.hasOutputPipe(PipeAwareCoreConstants.APP_TO_CORE_PIPE)) junction.sendMessage(PipeAwareCoreConstants.APP_TO_CORE_PIPE,__message);
 		}
+		
+		protected function _destroyCores():void
+		{
+			
+			//destroy is misnomer as here we only want to remove the pipe connections out and in from the relevant cores
+			var __appOutFitting:TeeSplit = junction.retrievePipe(PipeAwareCoreConstants.APP_TO_CORE_PIPE) as TeeSplit;
+			var __appInFitting:TeeMerge = junction.retrievePipe(PipeAwareCoreConstants.CORE_TO_APP_PIPE) as TeeMerge;
+			var __vo:DisconnectPipeFittingsVO = new DisconnectPipeFittingsVO(__appOutFitting, __appInFitting);
+			junction.sendMessage(PipeAwareCoreConstants.APP_TO_CORE_PIPE, new Message(Cores.SIMPLE_CORE_1, PipeConstants.UNPLUMB_CORE_FROM_SHELL, __vo, Message.PRIORITY_HIGH));
+			junction.sendMessage(PipeAwareCoreConstants.APP_TO_CORE_PIPE, new Message(Cores.SIMPLE_CORE_2, PipeConstants.UNPLUMB_CORE_FROM_SHELL, __vo, Message.PRIORITY_HIGH));
+			
+			//now we can go on and notify application mediator to handle the removeChild and destroy functionality on the core
+		}
+		
+		protected function _createCores():void
+		{
+			
+		}
+
 		
 		/**
 		 * Handle incoming pipe messages for the ShellJunction.
@@ -144,15 +170,9 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			//done in a hacky way as using many instances of same core class
 			if (__message.getBody().toString() == Cores.SIMPLE_CORE_3)
 			{
-				if (Facade.hasCore(Cores.SIMPLE_CORE_1) && Facade.hasCore(Cores.SIMPLE_CORE_2))
-				{
-					sendNotification(PipeConstants.DESTROY_CORE, [Cores.SIMPLE_CORE_1, Cores.SIMPLE_CORE_2]);
-					
-				}
-				else
-				{
-					
-				}
+				var __action:String = (Facade.hasCore(Cores.SIMPLE_CORE_1) && Facade.hasCore(Cores.SIMPLE_CORE_2)) ? PipeConstants.DESTROY_CORE : PipeConstants.CREATE_CORE;
+				(__action == PipeConstants.DESTROY_CORE) ? _destroyCores() : _createCores();
+				sendNotification(__action, [Cores.SIMPLE_CORE_1, Cores.SIMPLE_CORE_2]);
 			}
 		}
 	}

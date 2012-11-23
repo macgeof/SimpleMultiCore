@@ -14,6 +14,8 @@ package com.generatorsystems.puremvc.multicore.utils
 		
 		public static const MESSAGE_TO_ALL_CORES:String = "messageToAllCores";
 		
+		public static const UNPLUMB_CORE_FROM_SHELL:String = "removePlumbing";
+		
 		public static const DESTROY_CORE:String = "destroyCore";
 		public static const CREATE_CORE:String = "createCore";
 	}

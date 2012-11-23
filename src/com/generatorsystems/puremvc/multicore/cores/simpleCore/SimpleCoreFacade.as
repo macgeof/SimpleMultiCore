@@ -3,6 +3,9 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore
 	import com.gb.puremvc.controller.ApplicationStartupCommand;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.BaseCoreFacade;
+	import com.generatorsystems.puremvc.multicore.cores.simpleCore.model.SimpleCoreProxy;
+	import com.generatorsystems.puremvc.multicore.cores.simpleCore.view.SimpleCoreJunctionMediator;
+	import com.generatorsystems.puremvc.multicore.cores.simpleCore.view.SimpleCoreMediator;
 	
 	public class SimpleCoreFacade extends BaseCoreFacade
 	{
@@ -44,6 +47,16 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore
 			
 			registerCommand(GBNotifications.STARTUP, __startupCommand);
 			sendNotification(GBNotifications.STARTUP, __application);
+		}
+		
+		override public function destroy():void
+		{
+			removeMediator(SimpleCoreJunctionMediator.NAME);
+			removeMediator(SimpleCoreMediator.NAME);
+			
+			removeProxy(SimpleCoreProxy.NAME);
+			
+			super.destroy();
 		}
 	}
 }

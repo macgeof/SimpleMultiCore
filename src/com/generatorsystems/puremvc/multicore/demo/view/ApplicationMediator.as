@@ -2,6 +2,8 @@ package com.generatorsystems.puremvc.multicore.demo.view
 {
 	import avmplus.getQualifiedClassName;
 	
+	import com.gb.puremvc.GBCore;
+	import com.gb.puremvc.GBPipeAwareCore;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.view.GBFlashMediator;
 	import com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore;
@@ -11,11 +13,14 @@ package com.generatorsystems.puremvc.multicore.demo.view
 	import com.generatorsystems.puremvc.multicore.demo.view.components.MessageTracer;
 	import com.generatorsystems.puremvc.multicore.utils.PipeConstants;
 	
+	import flash.display.DisplayObject;
 	import flash.text.TextFormat;
 	import flash.utils.getDefinitionByName;
 	
 	import org.puremvc.as3.multicore.interfaces.IMediator;
 	import org.puremvc.as3.multicore.interfaces.INotification;
+	import org.puremvc.as3.multicore.patterns.facade.Facade;
+	import org.puremvc.as3.multicore.utilities.pipes.interfaces.IPipeAware;
 	import org.puremvc.as3.multicore.utilities.pipes.messages.Message;
 	
 	public class ApplicationMediator extends GBFlashMediator implements IMediator
@@ -44,7 +49,9 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			var __interests:Array = super.listNotificationInterests();
 			__interests.push(
 					GBNotifications.STARTUP_COMPLETE,
-					ApplicationFacade.SHOW_SHELL_MESSAGE
+					ApplicationFacade.SHOW_SHELL_MESSAGE,
+					PipeConstants.CREATE_CORE,
+					PipeConstants.DESTROY_CORE
 				);
 			
 			return __interests;
@@ -63,6 +70,18 @@ package com.generatorsystems.puremvc.multicore.demo.view
 				case ApplicationFacade.SHOW_SHELL_MESSAGE:
 				{
 					_updateMessageTracer(__note.getBody().toString());
+					break;
+				}
+					
+				case PipeConstants.CREATE_CORE :
+				{
+					_createCores();
+					break;
+				}
+					
+				case PipeConstants.DESTROY_CORE :
+				{
+					_destroyCores(__note.getBody() as Array);
 					break;
 				}
 						
@@ -100,8 +119,6 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		protected function _updateMessageTracer(__message:String):void
 		{
 			if (_messageTracer) _messageTracer.messageText.text += "NEW MESSAGE RECEIVED\n" + __message +"\n\n";
-//			_messageTracer.messageText.text += getDefinitionByName("SimpleCore").toString() + "\n";
-			_messageTracer.messageText.text += getDefinitionByName("com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore").toString() + "\n";
 		}
 		
 		protected function _addCore(__key:String, __data:Object):void
@@ -120,6 +137,38 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			
 			//add the new core to the display list
 			application.addChild(__core);
+		}
+		
+		//plumbing already disconnected for the cores
+		protected function _destroyCores(__cores:Array):void
+		{
+			var __child:SimpleCore;
+			for each (var __coreName:String in __cores)
+			{
+				for (var i:int = 0; i < application.numChildren; i++)
+				{
+					__child = application.getChildAt(i) as SimpleCore;
+					if (__child)
+					{
+						if (__child.key == __coreName)
+						{
+							application.removeChild(__child);
+							
+							__child.destroy();
+							__child = null;
+							
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		protected function _createCores():void
+		{
+			trace("there : create");
+			_addCore(Cores.SIMPLE_CORE_1, {data:{x:50, y:150}, otherData:{colour:0xFF0000}});
+			_addCore(Cores.SIMPLE_CORE_2, {data:{x:150, y:150}, otherData:{colour:0x00FF00}});
 		}
 		
 		protected function get application():Application

@@ -2,6 +2,7 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 {
 	import com.gb.puremvc.pipes.PipeAwareCoreConstants;
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.view.BaseCoreJunctionMediator;
+	import com.generatorsystems.puremvc.multicore.cores.model.vo.DisconnectPipeFittingsVO;
 	import com.generatorsystems.puremvc.multicore.cores.simpleCore.model.SimpleCoreProxy;
 	import com.generatorsystems.puremvc.multicore.utils.PipeConstants;
 	
@@ -12,6 +13,7 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 	import org.puremvc.as3.multicore.utilities.pipes.messages.Message;
 	import org.puremvc.as3.multicore.utilities.pipes.plumbing.Junction;
 	import org.puremvc.as3.multicore.utilities.pipes.plumbing.JunctionMediator;
+	import org.puremvc.as3.multicore.utilities.pipes.plumbing.Pipe;
 	
 	public class SimpleCoreJunctionMediator extends BaseCoreJunctionMediator
 	{
@@ -31,10 +33,11 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 		}
 		
 		override public function onRemove():void
-		{
+		{			
 			super.onRemove();
 			
 			_coreData = null;
+			
 		}
 		
 		override public function listNotificationInterests():Array
@@ -48,40 +51,6 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 		{
 			switch (__note.getName())
 			{
-				//override superclass handling of pipe connections
-				//required so we can inform proxy as required
-				
-				// accept an input pipe
-				// register the pipe and if successful 
-				// set this mediator as its listener
-				case JunctionMediator.ACCEPT_INPUT_PIPE:
-					var inputPipeName:String = __note.getType();
-					var inputPipe:IPipeFitting = __note.getBody() as IPipeFitting;
-					if ( junction.registerPipe(inputPipeName, Junction.INPUT, inputPipe) ) 
-					{
-						SimpleCoreProxy(_coreData).shellInConnected = (junction.addPipeListener( inputPipeName, this, handlePipeMessage ));
-					}
-					
-					//send message to shell via out pipe if it exists
-					if (junction.hasOutputPipe(PipeAwareCoreConstants.CORE_TO_APP_PIPE))
-					{
-						
-						var __inConnectedMessage:Message = new Message(PipeConstants.SEND_MESSAGE_TO_SHELL,this.multitonKey, this, Message.PRIORITY_MED);
-						sendNotification(PipeConstants.SEND_MESSAGE_TO_SHELL, __inConnectedMessage);
-					}
-					break;
-				
-				// accept an output pipe
-				case JunctionMediator.ACCEPT_OUTPUT_PIPE:
-					var outputPipeName:String = __note.getType();
-					var outputPipe:IPipeFitting = __note.getBody() as IPipeFitting;
-					SimpleCoreProxy(_coreData).shellOutConnect = junction.registerPipe( outputPipeName, Junction.OUTPUT, outputPipe );
-					
-					//send message to shell via new out pipe
-					var __outConnectedMessage:Message = new Message(PipeConstants.SEND_MESSAGE_TO_SHELL,this.multitonKey, this, Message.PRIORITY_MED);
-					sendNotification(PipeConstants.SEND_MESSAGE_TO_SHELL, __outConnectedMessage);
-					break;
-				
 				default :
 					super.handleNotification(__note);
 					break;
@@ -96,8 +65,28 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 			
 			if (__targetCore == this.multitonKey || __targetCore == PipeConstants.MESSAGE_TO_ALL_CORES)
 			{
-				trace(this, "handlePipeMessage", this.multitonKey, "MESSAGE DETAILS : getType() = ",__message.getType()," : getHeader() = ", __message.getHeader(), " : getBody = ", __message.getBody(), " : getPriority = ",__message.getPriority());
+//				trace(this, "handlePipeMessage", this.multitonKey, "MESSAGE DETAILS : getType() = ",__message.getType()," : getHeader() = ", __message.getHeader(), " : getBody = ", __message.getBody(), " : getPriority = ",__message.getPriority());
+				if (__message.getHeader().toString() == PipeConstants.UNPLUMB_CORE_FROM_SHELL)
+				{
+					var __success:Boolean =_disconnectCoreFromShell(__message.getBody() as DisconnectPipeFittingsVO);
+				}
 			}
+		}
+		
+		//this is final - once disconnected this core is only accessible via methods exposed on the core class itself
+		protected function _disconnectCoreFromShell(__fittingsVO:DisconnectPipeFittingsVO):Boolean
+		{
+			var __inPipe:IPipeFitting = junction.retrievePipe(_shellToCorePipeName);
+			__inPipe = __fittingsVO.appOutFitting.disconnectFitting(__inPipe);
+			
+			var __outPipe:IPipeFitting = junction.retrievePipe(_coreToShellPipeName);
+			var __disconnectedFitting:IPipeFitting = __outPipe.disconnect();
+			
+			var __return:Boolean = (__inPipe && __disconnectedFitting);
+			__inPipe = null;
+			__outPipe = null;
+			
+			return __return;
 		}
 	}
 }
