@@ -97,11 +97,13 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		{
 			_createFeedbackView();
 			
-			_addCore(Cores.SIMPLE_CORE_1, {data:{x:50, y:150}, otherData:{colour:0xFF0000}});
-			_addCore(Cores.SIMPLE_CORE_2, {data:{x:150, y:150}, otherData:{colour:0x00FF00}});
-			_addCore(Cores.SIMPLE_CORE_3, {data:{x:250, y:150}, otherData:{colour:0x0000FF}});
+			var __y:Number = _messageTracer.y + _messageTracer.height + 30;
+			_addCore(Cores.SIMPLE_CORE_1, {data:{x:50, y:__y}, otherData:{colour:0xFF0000}});
+			_addCore(Cores.SIMPLE_CORE_2, {data:{x:150, y:__y}, otherData:{colour:0x00FF00}});
+			_addCore(Cores.SIMPLE_CORE_3, {data:{x:250, y:__y}, otherData:{colour:0x0000FF}});
+			_addCore(Cores.SIMPLE_CORE_4, {data:{x:350, y:__y}, otherData:{colour:0x00FFFF}});
 				
-			//send message to only simpleCore1 cores via out pipe
+			//example send message to only simpleCore1 cores via out pipe
 			var __outConnectedMessage:Message = new Message(Cores.SIMPLE_CORE_1, {prop:"second value", otherProp:"second other value"}, this, Message.PRIORITY_MED);
 			sendNotification(PipeConstants.SEND_MESSAGE_TO_CORE, __outConnectedMessage);
 		}
@@ -127,6 +129,7 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			//set data on the core so it can be used/parsed during core startup
 			var __core:SimpleCore = new SimpleCore(__key, __data);
 			__core.startup();
+			trace("here");
 			sendNotification(PipeConstants.CONNECT_CORE_TO_SHELL, __core);
 			sendNotification(PipeConstants.CONNECT_SHELL_TO_CORE, __core);
 			sendNotification(ApplicationFacade.CORE_STARTED, __core);
@@ -166,9 +169,9 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		
 		protected function _createCores():void
 		{
-			trace("there : create");
-			_addCore(Cores.SIMPLE_CORE_1, {data:{x:50, y:150}, otherData:{colour:0xFF0000}});
-			_addCore(Cores.SIMPLE_CORE_2, {data:{x:150, y:150}, otherData:{colour:0x00FF00}});
+			var __y:Number = _messageTracer.y + _messageTracer.height + 30;
+			_addCore(Cores.SIMPLE_CORE_1, {data:{x:50, y:__y}, otherData:{colour:0xFF0000}});
+			_addCore(Cores.SIMPLE_CORE_2, {data:{x:150, y:__y}, otherData:{colour:0x00FF00}});
 		}
 		
 		protected function get application():Application

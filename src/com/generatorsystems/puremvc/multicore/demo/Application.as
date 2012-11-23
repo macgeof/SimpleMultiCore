@@ -11,7 +11,7 @@ package com.generatorsystems.puremvc.multicore.demo
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	
-	[SWF(width="350", height="250", frameRate="30", backgroundColor="#FFFFFF")]
+	[SWF(width="600", height="500", frameRate="30", backgroundColor="#FFFFFF")]
 	public class Application extends GBApplication implements IShell
 	{
 		public function Application()
@@ -26,7 +26,7 @@ package com.generatorsystems.puremvc.multicore.demo
 		
 		override protected function init(event:Event=null):void
 		{
-			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.scaleMode = StageScaleMode.SHOW_ALL;
 			stage.align = StageAlign.TOP_LEFT;
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			startup();

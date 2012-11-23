@@ -31,14 +31,14 @@ package com.generatorsystems.puremvc.multicore.demo.view.components
 			var __graphics:Graphics = __bg.graphics;
 			__graphics.lineStyle(1, 0x000000);
 			__graphics.beginFill(0xE1E1E1, 1);
-			__graphics.drawRect(0, 0, 300, 125);
+			__graphics.drawRect(0, 0, 500, 250);
 			__graphics.endFill();
 			addChild(__bg);
 			
 			_messageText = new TextArea();
 			_messageText.x = _messageText.y = 10;
-			_messageText.width = 280;
-			_messageText.height = 105;
+			_messageText.width = 480;
+			_messageText.height = 230;
 			_messageText.wordWrap = true;
 			_messageText.textField.selectable = true;
 			_messageText.editable = false;
