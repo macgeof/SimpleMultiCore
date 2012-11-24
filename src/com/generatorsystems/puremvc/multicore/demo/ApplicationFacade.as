@@ -3,8 +3,11 @@ package com.generatorsystems.puremvc.multicore.demo
 	import com.gb.puremvc.controller.ApplicationStartupCommand;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.patterns.GBFacade;
+	import com.generatorsystems.puremvc.multicore.demo.model.enums.References;
 	
 	import org.puremvc.as3.multicore.interfaces.IFacade;
+	
+	References;
 	
 	public class ApplicationFacade extends GBFacade implements IFacade
 	{

@@ -1,0 +1,5 @@
+<xml>
+	<proxy classPath="com.generatorsystems.puremvc.multicore.demo.model.ApplicationDataProxy" source="xml/content.xml" name="shellData" type="asynch" />
+	<proxy classPath="com.gb.puremvc.model.StyleSheetProxy" source="css/styles.css" name="shellCSS" type="asynch" />
+<!-- 	<proxy classPath="com.gb.puremvc.model.LibraryProxy" source="assets/shellLibrary.swf" name="shellLibrary"  type="asynch" /> -->
+</xml>

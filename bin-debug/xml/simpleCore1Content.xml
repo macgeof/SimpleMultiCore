@@ -1,0 +1,29 @@
+<xml>
+	<settings>
+		<setting id="feedback-panel-width">450</setting>
+		<setting id="feedback-panel-height">250</setting>
+		<setting id="feedback-panel-background-colour">0xFF00FF</setting>
+		<setting id="feedback-panel-style">panelStyle</setting>
+	</settings>
+	<dictionary>
+		<term id="shell-title">Demo PureMVC Multicore App</term>
+		<term id="core-welcome">Hello from...</term>
+	</dictionary>
+	<cores>
+		<core name="simpleCore1" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore">
+			<proxies>
+				<proxy
+			</proxies>
+			<display x="50" y="350" colour="0xFF0000"/>
+		</core>
+		<core name="simpleCore2" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore">
+			<someNode />
+		</core>
+		<core name="simpleCore3" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore">
+			<someNode />
+		</core>
+		<core name="simpleCore4" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore">
+			<someNode />
+		</core>
+	</cores>
+</xml>

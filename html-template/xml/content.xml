@@ -1,0 +1,42 @@
+<xml>
+	<settings>
+		<setting id="feedback-panel-width">450</setting>
+		<setting id="feedback-panel-height">250</setting>
+		<setting id="feedback-panel-background-colour">0xC1C1C1</setting>
+		<setting id="feedback-panel-style">panelStyle</setting>
+	</settings>
+	<dictionary>
+		<term id="shell-title">Demo PureMVC Multicore App</term>
+		<term id="core-welcome">Hello from...</term>
+	</dictionary>
+	<cores>
+		<core name="simpleCoreOne" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore" destroyable="yes">
+			<proxies>
+				<proxy classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.model.SimpleCoreProxy" source="xml/simpleCore1Content.xml" name="shellData" type="asynch" />
+				<proxy classPath="com.gb.puremvc.model.StyleSheetProxy" source="css/simpleCore1Styles.css" name="shellCSS" type="asynch" />
+			</proxies>
+			<display x="50" y="350" radius="20" colour="0xFF0000"/>
+		</core>
+		<core name="simpleCoreTwo" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore" destroyable="yes">
+			<proxies>
+				<proxy classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.model.SimpleCoreProxy" source="xml/simpleCore1Content.xml" name="shellData" type="asynch" />
+				<proxy classPath="com.gb.puremvc.model.StyleSheetProxy" source="css/simpleCore1Styles.css" name="shellCSS" type="asynch" />
+			</proxies>
+			<display x="150" y="350" radius="30" colour="0x0000FF"/>
+		</core>
+		<core name="simpleCoreThree" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore" destroyable="false">
+			<proxies>
+				<proxy classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.model.SimpleCoreProxy" source="xml/simpleCore1Content.xml" name="shellData" type="asynch" />
+				<proxy classPath="com.gb.puremvc.model.StyleSheetProxy" source="css/simpleCore1Styles.css" name="shellCSS" type="asynch" />
+			</proxies>
+			<display x="250" y="350" radius="15" colour="0x00FF00"/>
+		</core>
+		<core name="simpleCoreFour" classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore" destroyable="false">
+			<proxies>
+				<proxy classPath="com.generatorsystems.puremvc.multicore.cores.simpleCore.model.SimpleCoreProxy" source="xml/simpleCore1Content.xml" name="shellData" type="asynch" />
+				<proxy classPath="com.gb.puremvc.model.StyleSheetProxy" source="css/simpleCore1Styles.css" name="shellCSS" type="asynch" />
+			</proxies>
+			<display x="350" y="350" radius="35" colour="0xFF00FF"/>
+		</core>
+	</cores>
+</xml>

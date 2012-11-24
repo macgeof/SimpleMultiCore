@@ -1,25 +1,28 @@
 package com.generatorsystems.puremvc.multicore.demo.view
 {
-	import avmplus.getQualifiedClassName;
-	
-	import com.gb.puremvc.GBCore;
-	import com.gb.puremvc.GBPipeAwareCore;
+	import com.gb.model.Settings;
+	import com.gb.puremvc.interfaces.ICore;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.view.GBFlashMediator;
 	import com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore;
 	import com.generatorsystems.puremvc.multicore.demo.Application;
 	import com.generatorsystems.puremvc.multicore.demo.ApplicationFacade;
+	import com.generatorsystems.puremvc.multicore.demo.model.ApplicationDataProxy;
+	import com.generatorsystems.puremvc.multicore.demo.model.ApplicationStateProxy;
+	import com.generatorsystems.puremvc.multicore.demo.model.DemoFontProxy;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.Cores;
+	import com.generatorsystems.puremvc.multicore.demo.model.enums.SettingsIDs;
+	import com.generatorsystems.puremvc.multicore.demo.model.enums.Styles;
+	import com.generatorsystems.puremvc.multicore.demo.model.vo.CoreVO;
 	import com.generatorsystems.puremvc.multicore.demo.view.components.MessageTracer;
 	import com.generatorsystems.puremvc.multicore.utils.PipeConstants;
 	
 	import flash.display.DisplayObject;
-	import flash.text.TextFormat;
 	import flash.utils.getDefinitionByName;
 	
+	import org.as3commons.logging.LoggerFactory;
 	import org.puremvc.as3.multicore.interfaces.IMediator;
 	import org.puremvc.as3.multicore.interfaces.INotification;
-	import org.puremvc.as3.multicore.patterns.facade.Facade;
 	import org.puremvc.as3.multicore.utilities.pipes.interfaces.IPipeAware;
 	import org.puremvc.as3.multicore.utilities.pipes.messages.Message;
 	
@@ -29,6 +32,10 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		
 		protected var _messageTracer:MessageTracer;
 		
+		protected var _dataProxy:ApplicationDataProxy;
+		protected var _stateProxy:ApplicationStateProxy;
+		protected var _fontProxy:DemoFontProxy;
+		
 		public function ApplicationMediator(mediatorName:String=null, viewComponent:Object=null)
 		{
 			super(mediatorName, viewComponent);
@@ -37,6 +44,8 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		override public function onRegister():void
 		{
 			super.onRegister();
+			
+			logger = LoggerFactory.getClassLogger(ApplicationMediator);
 		}
 		
 		override public function onRemove():void
@@ -63,6 +72,7 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			{
 				case GBNotifications.STARTUP_COMPLETE:
 				{
+					_initializeResources();
 					_initializeView();
 					break;
 				}
@@ -75,7 +85,7 @@ package com.generatorsystems.puremvc.multicore.demo.view
 					
 				case PipeConstants.CREATE_CORE :
 				{
-					_createCores();
+					_recreateCores();
 					break;
 				}
 					
@@ -93,85 +103,102 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			}
 		}
 		
+		protected function _initializeResources():void
+		{
+			_dataProxy = facade.retrieveProxy(ApplicationDataProxy.NAME) as ApplicationDataProxy;
+			_stateProxy = facade.retrieveProxy(ApplicationStateProxy.NAME) as ApplicationStateProxy;
+			styleSheet = serviceLocator.getStyleSheet(Cores.SHELL);
+			settings = serviceLocator.getSettings(Cores.SHELL);
+			dictionary = serviceLocator.getDictionary(Cores.SHELL);
+			
+		}
+		
 		protected function _initializeView():void
 		{
 			_createFeedbackView();
 			
-			var __y:Number = _messageTracer.y + _messageTracer.height + 30;
-			_addCore(Cores.SIMPLE_CORE_1, {data:{x:50, y:__y}, otherData:{colour:0xFF0000}});
-			_addCore(Cores.SIMPLE_CORE_2, {data:{x:150, y:__y}, otherData:{colour:0x00FF00}});
-			_addCore(Cores.SIMPLE_CORE_3, {data:{x:250, y:__y}, otherData:{colour:0x0000FF}});
-			_addCore(Cores.SIMPLE_CORE_4, {data:{x:350, y:__y}, otherData:{colour:0x00FFFF}});
+			//create the first 2 cores here - they are separated out as we can later recreate them
+			var __coreData:Vector.<CoreVO> = _dataProxy.coresData;
+			for each (var __coreVO:CoreVO in __coreData)
+			{
+				_addCore(__coreVO);
+			}
 				
 			//example send message to only simpleCore1 cores via out pipe
-			var __outConnectedMessage:Message = new Message(Cores.SIMPLE_CORE_1, {prop:"second value", otherProp:"second other value"}, this, Message.PRIORITY_MED);
+			var __outConnectedMessage:Message = new Message(__coreData[1].coreKey, __coreData[1], this, Message.PRIORITY_MED);
 			sendNotification(PipeConstants.SEND_MESSAGE_TO_CORE, __outConnectedMessage);
 		}
 		
 		protected function _createFeedbackView():void
 		{
-			_messageTracer = new MessageTracer();
+			_messageTracer = new MessageTracer(settings.getSetting(SettingsIDs.PANEL_WIDTH), settings.getSetting(SettingsIDs.PANEL_HEIGHT), uint(settings.getSetting(SettingsIDs.PANEL_BACKGROUND_COLOUR)), Styles.PANEL_STYLE, styleSheet);
 			_messageTracer.init();
-			var __format:TextFormat = _messageTracer.messageText.textField.getTextFormat();
-			__format.size = 6;
-			_messageTracer.messageText.textField.defaultTextFormat = __format;
 			application.addChild(_messageTracer);
 		}
 		
 		protected function _updateMessageTracer(__message:String):void
 		{
-			if (_messageTracer) _messageTracer.messageText.text += "NEW MESSAGE RECEIVED\n" + __message +"\n\n";
+			if (_messageTracer)
+			{
+				_messageTracer.addTextToTop("<span style='" + Styles.PANEL_STYLE + "'>NEW MESSAGE RECEIVED\n" + __message +"\n\n</span>");
+			}
 		}
 		
-		protected function _addCore(__key:String, __data:Object):void
+		protected function _addCore(__vo:CoreVO):void
 		{
 			//let's create a simple core instance
 			//set data on the core so it can be used/parsed during core startup
-			var __core:SimpleCore = new SimpleCore(__key, __data);
-			__core.startup();
-			trace("here");
-			sendNotification(PipeConstants.CONNECT_CORE_TO_SHELL, __core);
-			sendNotification(PipeConstants.CONNECT_SHELL_TO_CORE, __core);
-			sendNotification(ApplicationFacade.CORE_STARTED, __core);
+			var __coreClass:Class = getDefinitionByName(__vo.classPath) as Class;
+			var __core:Object = new __coreClass();
+			var __iDisplay:DisplayObject = __core as DisplayObject;
+			var __iCore:ICore = __core as ICore;
+			var __iPipeAware:IPipeAware = __core as IPipeAware;
+			__iDisplay.name = __vo.coreKey;
+			__iCore.key = __vo.coreKey;
+			__iCore.data = __vo;
+			__iCore.startup();
+
+			sendNotification(PipeConstants.CONNECT_CORE_TO_SHELL, __iPipeAware);
+			sendNotification(PipeConstants.CONNECT_SHELL_TO_CORE, __iPipeAware);
+			sendNotification(ApplicationFacade.CORE_STARTED, __iPipeAware);
 			
 			//send message all cores via out pipe
 			var __outConnectedMessage:Message = new Message(PipeConstants.MESSAGE_TO_ALL_CORES, {}, this, Message.PRIORITY_MED);
 			sendNotification(PipeConstants.SEND_MESSAGE_TO_CORE, __outConnectedMessage);
 			
 			//add the new core to the display list
-			application.addChild(__core);
+			application.addChild(__iDisplay);
 		}
 		
 		//plumbing already disconnected for the cores
 		protected function _destroyCores(__cores:Array):void
 		{
-			var __child:SimpleCore;
-			for each (var __coreName:String in __cores)
+			var __child:ICore;
+			var __display:DisplayObject = __child as DisplayObject;
+			var __coreData:Vector.<CoreVO> = _dataProxy.coresData;
+			for each (var __coreVO:CoreVO in __coreData)
 			{
-				for (var i:int = 0; i < application.numChildren; i++)
+				if (__coreVO.destroyable)
 				{
-					__child = application.getChildAt(i) as SimpleCore;
-					if (__child)
+					__display = application.getChildByName(__coreVO.coreKey);
+					if (__display)
 					{
-						if (__child.key == __coreName)
-						{
-							application.removeChild(__child);
-							
-							__child.destroy();
-							__child = null;
-							
-							break;
-						}
+						__child = __display as ICore;
+						if (application.contains(__display)) application.removeChild(__display);
+						__child.destroy();
+						__child = null;
 					}
 				}
 			}
 		}
 		
-		protected function _createCores():void
+		protected function _recreateCores():void
 		{
-			var __y:Number = _messageTracer.y + _messageTracer.height + 30;
-			_addCore(Cores.SIMPLE_CORE_1, {data:{x:50, y:__y}, otherData:{colour:0xFF0000}});
-			_addCore(Cores.SIMPLE_CORE_2, {data:{x:150, y:__y}, otherData:{colour:0x00FF00}});
+			var __coreData:Vector.<CoreVO> = _dataProxy.coresData;
+			for each (var __coreVO:CoreVO in __coreData)
+			{
+				if (__coreVO.destroyable) _addCore(__coreVO);
+			}
 		}
 		
 		protected function get application():Application
