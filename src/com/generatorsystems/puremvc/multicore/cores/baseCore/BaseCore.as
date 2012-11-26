@@ -1,6 +1,7 @@
 package com.generatorsystems.puremvc.multicore.cores.baseCore
 {
 	import com.gb.puremvc.GBPipeAwareCore;
+	import com.gb.transitions.AbstractTransition;
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.controller.StartupCommand;
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.model.BaseCoreProxy;
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.view.BaseCoreMediator;
@@ -47,6 +48,16 @@ package com.generatorsystems.puremvc.multicore.cores.baseCore
 		override public function get coreProxy():Class
 		{
 			return BaseCoreProxy;
+		}
+		
+		override public function transitionIn(__transition:AbstractTransition):void
+		{
+			//hmm not sure of use-case for this as yet
+		}
+		
+		override public function transitionOut(__transition:AbstractTransition):void
+		{
+			
 		}
 	}
 }

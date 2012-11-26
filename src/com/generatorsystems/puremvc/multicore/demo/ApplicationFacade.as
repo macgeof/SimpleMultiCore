@@ -1,6 +1,7 @@
 package com.generatorsystems.puremvc.multicore.demo
 {
 	import com.gb.puremvc.controller.ApplicationStartupCommand;
+	import com.gb.puremvc.interfaces.IShellFacade;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.patterns.GBFacade;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.References;
@@ -9,7 +10,7 @@ package com.generatorsystems.puremvc.multicore.demo
 	
 	References;
 	
-	public class ApplicationFacade extends GBFacade implements IFacade
+	public class ApplicationFacade extends GBFacade implements IShellFacade
 	{
 		public static const NAME:String = "ApplicationFacade";
 		

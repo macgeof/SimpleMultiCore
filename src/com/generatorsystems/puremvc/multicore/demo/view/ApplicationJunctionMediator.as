@@ -5,7 +5,9 @@ package com.generatorsystems.puremvc.multicore.demo.view
 	import com.gb.puremvc.pipes.PipeAwareCoreConstants;
 	import com.generatorsystems.puremvc.multicore.cores.model.vo.DisconnectPipeFittingsVO;
 	import com.generatorsystems.puremvc.multicore.demo.ApplicationFacade;
+	import com.generatorsystems.puremvc.multicore.demo.model.ApplicationDataProxy;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.Cores;
+	import com.generatorsystems.puremvc.multicore.demo.model.vo.CoreVO;
 	import com.generatorsystems.puremvc.multicore.utils.PipeConstants;
 	
 	import org.puremvc.as3.multicore.interfaces.INotification;
@@ -122,22 +124,26 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			if (junction.hasOutputPipe(PipeAwareCoreConstants.APP_TO_CORE_PIPE)) junction.sendMessage(PipeAwareCoreConstants.APP_TO_CORE_PIPE,__message);
 		}
 		
-		protected function _destroyCores():void
+		protected function _destroyCores(__cores:Vector.<CoreVO>):void
 		{
 			
 			//destroy is misnomer as here we only want to remove the pipe connections out and in from the relevant cores
 			var __appOutFitting:TeeSplit = junction.retrievePipe(PipeAwareCoreConstants.APP_TO_CORE_PIPE) as TeeSplit;
 			var __appInFitting:TeeMerge = junction.retrievePipe(PipeAwareCoreConstants.CORE_TO_APP_PIPE) as TeeMerge;
 			var __vo:DisconnectPipeFittingsVO = new DisconnectPipeFittingsVO(__appOutFitting, __appInFitting);
-			junction.sendMessage(PipeAwareCoreConstants.APP_TO_CORE_PIPE, new Message(Cores.SIMPLE_CORE_1, PipeConstants.UNPLUMB_CORE_FROM_SHELL, __vo, Message.PRIORITY_HIGH));
-			junction.sendMessage(PipeAwareCoreConstants.APP_TO_CORE_PIPE, new Message(Cores.SIMPLE_CORE_2, PipeConstants.UNPLUMB_CORE_FROM_SHELL, __vo, Message.PRIORITY_HIGH));
+			for each (var __core:CoreVO in __cores)
+			{
+				junction.sendMessage(PipeAwareCoreConstants.APP_TO_CORE_PIPE,
+					new Message(__core.coreKey,
+						PipeConstants.UNPLUMB_CORE_FROM_SHELL,
+						__vo,
+						Message.PRIORITY_HIGH
+					)
+				);
+			}
+			
 			
 			//now we can go on and notify application mediator to handle the removeChild and destroy functionality on the core
-		}
-		
-		protected function _createCores():void
-		{
-			
 		}
 
 		
@@ -171,8 +177,15 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			if (__message.getBody().toString() == Cores.SIMPLE_CORE_3)
 			{
 				var __action:String = (Facade.hasCore(Cores.SIMPLE_CORE_1) && Facade.hasCore(Cores.SIMPLE_CORE_2)) ? PipeConstants.DESTROY_CORE : PipeConstants.CREATE_CORE;
-				(__action == PipeConstants.DESTROY_CORE) ? _destroyCores() : _createCores();
-				sendNotification(__action, [Cores.SIMPLE_CORE_1, Cores.SIMPLE_CORE_2]);
+				var __coresData:Vector.<CoreVO> = (facade.retrieveProxy(ApplicationDataProxy.NAME) as ApplicationDataProxy).coresData;
+				var __destroyableCoresData:Vector.<CoreVO> = new Vector.<CoreVO>();
+				for each (var __coreVO:CoreVO in __coresData)
+				{
+					if  (__coreVO.destroyable) __destroyableCoresData.push(__coreVO);
+				}
+				
+				if (__action == PipeConstants.DESTROY_CORE) _destroyCores(__destroyableCoresData);
+				sendNotification(__action, __destroyableCoresData);
 			}
 		}
 	}

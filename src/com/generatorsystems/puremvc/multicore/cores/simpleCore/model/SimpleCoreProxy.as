@@ -1,7 +1,9 @@
 package com.generatorsystems.puremvc.multicore.cores.simpleCore.model
 {
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.model.BaseCoreProxy;
+	import com.generatorsystems.puremvc.multicore.demo.model.enums.Cores;
 	import com.generatorsystems.puremvc.multicore.demo.model.vo.CoreVO;
+	import com.lassie.lib.IMediaLibrary;
 	
 	import flash.geom.Point;
 	
@@ -12,17 +14,25 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.model
 		public static const NAME:String = "SimpleCoreProxy";
 		
 		protected var _coreData:CoreVO;
+		protected var _library:IMediaLibrary;
 		
 		public function SimpleCoreProxy(proxyName:String=null, data:Object=null)
 		{
 			super(proxyName, data);
 		}
 		
+		public function get library():IMediaLibrary
+		{
+			return _library;
+		}
+
 		override public function onRegister():void
 		{
 			super.onRegister();
 			
 			_coreData = data as CoreVO;
+			
+			_library = serviceLocator.getLibrary(Cores.SHELL);
 		}
 		
 		override public function onRemove():void

@@ -1,5 +1,24 @@
 .panelStyle {
-	font-size: 11px;
-	font-family:_HelveticaNeueLTStd-Lt;
-	color:#CCCC00;
+	font-size: 13px;
+	font-family:_MyriadProRegular;
+	font-weight:bold;
+	color:#222222;
+}
+
+.buttonUp {
+	font-size: 12px;
+	font-family: Nobel-Book;
+	color: #333333;	
+}
+
+.buttonOver {
+	font-size: 12px;
+	font-family: Nobel-Book;
+	color: #FF3333;	
+}
+
+.buttonOut {
+	font-size: 12px;
+	font-family: Nobel-Book;
+	color: #3333FF;	
 }

@@ -55,12 +55,12 @@ package com.generatorsystems.puremvc.multicore.demo.model
 		{
 			super.onLoad();
 			
+			logger = LoggerFactory.getClassLogger(ApplicationDataProxy);
 			
-			logger = LoggerFactory.getClassLogger(ApplicationDataProxy);			
-			_parseData();
+			_parseAdditionalData();
 		}
 		
-		protected function _parseData():void
+		protected function _parseAdditionalData():void
 		{
 			_parseCores(xml.cores.core);
 		}

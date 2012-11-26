@@ -1,19 +1,18 @@
 package com.generatorsystems.puremvc.multicore.demo.view
 {
-	import com.gb.model.Settings;
 	import com.gb.puremvc.interfaces.ICore;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.view.GBFlashMediator;
-	import com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore;
 	import com.generatorsystems.puremvc.multicore.demo.Application;
 	import com.generatorsystems.puremvc.multicore.demo.ApplicationFacade;
 	import com.generatorsystems.puremvc.multicore.demo.model.ApplicationDataProxy;
 	import com.generatorsystems.puremvc.multicore.demo.model.ApplicationStateProxy;
-	import com.generatorsystems.puremvc.multicore.demo.model.DemoFontProxy;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.Cores;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.SettingsIDs;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.Styles;
 	import com.generatorsystems.puremvc.multicore.demo.model.vo.CoreVO;
+	import com.generatorsystems.puremvc.multicore.demo.transitions.EnterLeftTransition;
+	import com.generatorsystems.puremvc.multicore.demo.transitions.ExitLeftTransition;
 	import com.generatorsystems.puremvc.multicore.demo.view.components.MessageTracer;
 	import com.generatorsystems.puremvc.multicore.utils.PipeConstants;
 	
@@ -23,6 +22,7 @@ package com.generatorsystems.puremvc.multicore.demo.view
 	import org.as3commons.logging.LoggerFactory;
 	import org.puremvc.as3.multicore.interfaces.IMediator;
 	import org.puremvc.as3.multicore.interfaces.INotification;
+	import org.puremvc.as3.multicore.patterns.facade.Facade;
 	import org.puremvc.as3.multicore.utilities.pipes.interfaces.IPipeAware;
 	import org.puremvc.as3.multicore.utilities.pipes.messages.Message;
 	
@@ -34,7 +34,6 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		
 		protected var _dataProxy:ApplicationDataProxy;
 		protected var _stateProxy:ApplicationStateProxy;
-		protected var _fontProxy:DemoFontProxy;
 		
 		public function ApplicationMediator(mediatorName:String=null, viewComponent:Object=null)
 		{
@@ -85,13 +84,13 @@ package com.generatorsystems.puremvc.multicore.demo.view
 					
 				case PipeConstants.CREATE_CORE :
 				{
-					_recreateCores();
+					_recreateCores(__note.getBody() as Vector.<CoreVO>);
 					break;
 				}
 					
 				case PipeConstants.DESTROY_CORE :
 				{
-					_destroyCores(__note.getBody() as Array);
+					_destroyCores(__note.getBody() as Vector.<CoreVO>);
 					break;
 				}
 						
@@ -110,6 +109,7 @@ package com.generatorsystems.puremvc.multicore.demo.view
 			styleSheet = serviceLocator.getStyleSheet(Cores.SHELL);
 			settings = serviceLocator.getSettings(Cores.SHELL);
 			dictionary = serviceLocator.getDictionary(Cores.SHELL);
+			library = serviceLocator.getLibrary(Cores.SHELL);
 			
 		}
 		
@@ -140,64 +140,67 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		{
 			if (_messageTracer)
 			{
-				_messageTracer.addTextToTop("<span style='" + Styles.PANEL_STYLE + "'>NEW MESSAGE RECEIVED\n" + __message +"\n\n</span>");
+				_messageTracer.addTextToTop("NEW MESSAGE RECEIVED\n" + __message);
 			}
 		}
 		
 		protected function _addCore(__vo:CoreVO):void
 		{
-			//let's create a simple core instance
-			//set data on the core so it can be used/parsed during core startup
-			var __coreClass:Class = getDefinitionByName(__vo.classPath) as Class;
-			var __core:Object = new __coreClass();
-			var __iDisplay:DisplayObject = __core as DisplayObject;
-			var __iCore:ICore = __core as ICore;
-			var __iPipeAware:IPipeAware = __core as IPipeAware;
-			__iDisplay.name = __vo.coreKey;
-			__iCore.key = __vo.coreKey;
-			__iCore.data = __vo;
-			__iCore.startup();
-
-			sendNotification(PipeConstants.CONNECT_CORE_TO_SHELL, __iPipeAware);
-			sendNotification(PipeConstants.CONNECT_SHELL_TO_CORE, __iPipeAware);
-			sendNotification(ApplicationFacade.CORE_STARTED, __iPipeAware);
-			
-			//send message all cores via out pipe
-			var __outConnectedMessage:Message = new Message(PipeConstants.MESSAGE_TO_ALL_CORES, {}, this, Message.PRIORITY_MED);
-			sendNotification(PipeConstants.SEND_MESSAGE_TO_CORE, __outConnectedMessage);
-			
-			//add the new core to the display list
-			application.addChild(__iDisplay);
+			if (!Facade.hasCore(__vo.coreKey))
+			{
+				//let's create a simple core instance
+				//set data on the core so it can be used/parsed during core startup
+				var __coreClass:Class = getDefinitionByName(__vo.classPath) as Class;
+				var __core:Object = new __coreClass();
+				var __iDisplay:DisplayObject = __core as DisplayObject;
+				var __iCore:ICore = __core as ICore;
+				var __iPipeAware:IPipeAware = __core as IPipeAware;
+				__iDisplay.name = __vo.coreKey;
+				__iCore.key = __vo.coreKey;
+				__iCore.data = __vo;
+				__iCore._parent = application;
+				__iCore.startup();
+	
+				sendNotification(PipeConstants.CONNECT_CORE_TO_SHELL, __iPipeAware);
+				sendNotification(PipeConstants.CONNECT_SHELL_TO_CORE, __iPipeAware);
+				sendNotification(ApplicationFacade.CORE_STARTED, __iPipeAware);
+				
+				//send message all cores via out pipe
+				var __outConnectedMessage:Message = new Message(PipeConstants.MESSAGE_TO_ALL_CORES, {}, this, Message.PRIORITY_MED);
+				sendNotification(PipeConstants.SEND_MESSAGE_TO_CORE, __outConnectedMessage);
+				
+				//add the new core to the display list
+				var __transition:EnterLeftTransition = new EnterLeftTransition(__iDisplay);
+				__transition.duration = 3;
+				__iCore.transitionIn(__transition);
+				application.addChild(__iDisplay);
+			}
 		}
 		
 		//plumbing already disconnected for the cores
-		protected function _destroyCores(__cores:Array):void
+		protected function _destroyCores(__cores:Vector.<CoreVO>):void
 		{
 			var __child:ICore;
-			var __display:DisplayObject = __child as DisplayObject;
-			var __coreData:Vector.<CoreVO> = _dataProxy.coresData;
-			for each (var __coreVO:CoreVO in __coreData)
+			var __display:DisplayObject;
+			for each (var __coreVO:CoreVO in __cores)
 			{
-				if (__coreVO.destroyable)
+				__display = application.getChildByName(__coreVO.coreKey);
+				if (__display)
 				{
-					__display = application.getChildByName(__coreVO.coreKey);
-					if (__display)
-					{
-						__child = __display as ICore;
-						if (application.contains(__display)) application.removeChild(__display);
-						__child.destroy();
-						__child = null;
-					}
+					__child = __display as ICore;
+					var __transition:ExitLeftTransition = new ExitLeftTransition(__child);
+					__transition.duration = 3;
+					__child.transitionOut(__transition);
+					
 				}
 			}
 		}
 		
-		protected function _recreateCores():void
+		protected function _recreateCores(__cores:Vector.<CoreVO>):void
 		{
-			var __coreData:Vector.<CoreVO> = _dataProxy.coresData;
-			for each (var __coreVO:CoreVO in __coreData)
+			for each (var __coreVO:CoreVO in __cores)
 			{
-				if (__coreVO.destroyable) _addCore(__coreVO);
+				_addCore(__coreVO);
 			}
 		}
 		

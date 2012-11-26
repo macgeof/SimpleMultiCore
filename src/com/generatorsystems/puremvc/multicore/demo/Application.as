@@ -1,11 +1,13 @@
 package com.generatorsystems.puremvc.multicore.demo
 {
 	import com.gb.puremvc.GBApplication;
+	import com.gb.puremvc.interfaces.ICore;
 	import com.gb.puremvc.interfaces.IShell;
 	import com.generatorsystems.puremvc.multicore.demo.controller.StartupCommand;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.Cores;
 	import com.generatorsystems.puremvc.multicore.demo.view.ApplicationMediator;
 	
+	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
@@ -36,6 +38,18 @@ package com.generatorsystems.puremvc.multicore.demo
 		{
 			facade = ApplicationFacade.getInstance(Cores.SHELL);
 			facade.startup(this, StartupCommand);
+		}
+		
+		override public function coreTransitionedOut(__core:ICore):void
+		{
+			var __display:DisplayObject = __core as DisplayObject;
+			__display = this.getChildByName(__core.key);
+			if (__display)
+			{
+				if (this.contains(__display)) this.removeChild(__display);
+				__core.destroy();
+				__core = null;
+			}
 		}
 		
 		
