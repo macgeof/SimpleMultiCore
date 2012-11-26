@@ -1,5 +1,6 @@
 package com.generatorsystems.puremvc.multicore.cores.baseCore.view
 {
+	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.pipes.PipeAwareCoreConstants;
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.model.BaseCoreProxy;
 	import com.generatorsystems.puremvc.multicore.utils.PipeConstants;
@@ -117,7 +118,7 @@ package com.generatorsystems.puremvc.multicore.cores.baseCore.view
 		
 		override public function handlePipeMessage(__message:IPipeMessage):void
 		{
-			trace(this, "handlePipeMessage", this.multitonKey, "MESSAGE DETAILS : getType() = ",__message.getType()," : getHeader() = ", __message.getHeader(), " : getBody = ", __message.getBody(), " : getPriority = ",__message.getPriority());
+//			trace(this, "handlePipeMessage", this.multitonKey, "MESSAGE DETAILS : getType() = ",__message.getType()," : getHeader() = ", __message.getHeader(), " : getBody = ", __message.getBody(), " : getPriority = ",__message.getPriority());
 		}
 		
 		private function _removePipe(__pipe:IPipeFitting, __name:String):void

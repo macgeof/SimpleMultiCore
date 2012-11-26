@@ -70,6 +70,10 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore.view
 				{
 					var __success:Boolean =_disconnectCoreFromShell(__message.getBody() as DisconnectPipeFittingsVO);
 				}
+				else
+				{
+					super.handlePipeMessage(__message);
+				}
 			}
 		}
 		

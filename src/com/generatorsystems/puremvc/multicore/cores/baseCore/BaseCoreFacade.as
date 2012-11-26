@@ -6,7 +6,7 @@ package com.generatorsystems.puremvc.multicore.cores.baseCore
 	
 	public class BaseCoreFacade extends GBCoreFacade
 	{
-		public static const NAME:String = "SimpleCoreFacade";
+		public static const NAME:String = "BaseeCoreFacade";
 		
 		public function BaseCoreFacade(key:String)
 		{

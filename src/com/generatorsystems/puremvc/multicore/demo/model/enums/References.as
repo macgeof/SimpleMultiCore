@@ -6,14 +6,14 @@ package com.generatorsystems.puremvc.multicore.demo.model.enums
 	import com.generatorsystems.puremvc.multicore.demo.model.ApplicationDataProxy;
 	import com.greensock.plugins.TweenPlugin;
 	
-	import fonts.familes.Nobel;
+	import com.generatorsystems.fonts.familes.Nobel;
 	
 	//and go with startup classes that require external resources at runtime or compiletime
 	com.generatorsystems.puremvc.multicore.demo.model.ApplicationDataProxy;
 	com.gb.puremvc.model.StyleSheetProxy;
 	com.gb.puremvc.model.LibraryProxy;
 	com.generatorsystems.puremvc.multicore.cores.simpleCore.SimpleCore;
-	fonts.familes.Nobel;
+	com.generatorsystems.fonts.familes.Nobel;
 	com.greensock.plugins.TweenPlugin;
 	
 	public class References

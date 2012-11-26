@@ -126,6 +126,10 @@ package com.generatorsystems.puremvc.multicore.demo.view
 		
 		protected function _destroyCores(__cores:Vector.<CoreVO>):void
 		{
+			//send notification to pause and disable cores...see ApplicationFacade for registered command for disable
+			//pause can be handled via any view mediator that needs to actually pause content in its view
+			sendNotification(GBNotifications.PAUSE);
+			sendNotification(GBNotifications.DISABLE);
 			
 			//destroy is misnomer as here we only want to remove the pipe connections out and in from the relevant cores
 			var __appOutFitting:TeeSplit = junction.retrievePipe(PipeAwareCoreConstants.APP_TO_CORE_PIPE) as TeeSplit;
@@ -141,9 +145,6 @@ package com.generatorsystems.puremvc.multicore.demo.view
 					)
 				);
 			}
-			
-			
-			//now we can go on and notify application mediator to handle the removeChild and destroy functionality on the core
 		}
 
 		

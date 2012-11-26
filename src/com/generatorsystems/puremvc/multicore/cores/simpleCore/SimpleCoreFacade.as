@@ -3,6 +3,8 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore
 	import com.gb.puremvc.controller.ApplicationStartupCommand;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.generatorsystems.puremvc.multicore.cores.baseCore.BaseCoreFacade;
+	import com.generatorsystems.puremvc.multicore.cores.simpleCore.controller.DisableCoreCommand;
+	import com.generatorsystems.puremvc.multicore.cores.simpleCore.controller.EnableCoreCommand;
 	import com.generatorsystems.puremvc.multicore.cores.simpleCore.model.SimpleCoreProxy;
 	import com.generatorsystems.puremvc.multicore.cores.simpleCore.view.SimpleCoreJunctionMediator;
 	import com.generatorsystems.puremvc.multicore.cores.simpleCore.view.SimpleCoreMediator;
@@ -31,6 +33,8 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore
 		override protected function initializeController( ) : void 
 		{
 			super.initializeController();
+			registerCommand(GBNotifications.DISABLE, DisableCoreCommand);
+			registerCommand(GBNotifications.ENABLE, EnableCoreCommand);
 		}
 		
 		/**
@@ -57,6 +61,16 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore
 			removeProxy(SimpleCoreProxy.NAME);
 			
 			super.destroy();
+		}
+		
+		override public function disable():void
+		{
+			sendNotification(GBNotifications.DISABLE);
+		}
+		
+		override public function enable():void
+		{
+			sendNotification(GBNotifications.ENABLE);
 		}
 	}
 }

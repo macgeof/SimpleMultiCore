@@ -3,6 +3,7 @@ package com.generatorsystems.puremvc.multicore.demo
 	import com.gb.puremvc.GBApplication;
 	import com.gb.puremvc.interfaces.ICore;
 	import com.gb.puremvc.interfaces.IShell;
+	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.generatorsystems.puremvc.multicore.demo.controller.StartupCommand;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.Cores;
 	import com.generatorsystems.puremvc.multicore.demo.view.ApplicationMediator;
@@ -50,6 +51,7 @@ package com.generatorsystems.puremvc.multicore.demo
 				__core.destroy();
 				__core = null;
 			}
+			facade.sendNotification(GBNotifications.ENABLE);
 		}
 		
 		

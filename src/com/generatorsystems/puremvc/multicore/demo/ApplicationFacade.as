@@ -4,6 +4,8 @@ package com.generatorsystems.puremvc.multicore.demo
 	import com.gb.puremvc.interfaces.IShellFacade;
 	import com.gb.puremvc.model.enum.GBNotifications;
 	import com.gb.puremvc.patterns.GBFacade;
+	import com.generatorsystems.puremvc.multicore.demo.controller.DisableCoreCommand;
+	import com.generatorsystems.puremvc.multicore.demo.controller.EnableCoreCommand;
 	import com.generatorsystems.puremvc.multicore.demo.model.enums.References;
 	
 	import org.puremvc.as3.multicore.interfaces.IFacade;
@@ -37,6 +39,8 @@ package com.generatorsystems.puremvc.multicore.demo
 		override protected function initializeController( ) : void 
 		{
 			super.initializeController();
+			registerCommand(GBNotifications.ENABLE, EnableCoreCommand);
+			registerCommand(GBNotifications.DISABLE, DisableCoreCommand);
 		}
 		
 		/**

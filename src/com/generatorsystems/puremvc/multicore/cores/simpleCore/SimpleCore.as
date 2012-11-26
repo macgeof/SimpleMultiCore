@@ -71,5 +71,15 @@ package com.generatorsystems.puremvc.multicore.cores.simpleCore
 			(__event.target as AbstractTransition).removeEventListener(TransitionEvent.COMPLETE, _transitionOutCompleteHandler);
 			if (_parent) (_parent as IShell).coreTransitionedOut(this);
 		}
+		
+		override public function enable():void
+		{
+			facade.enable();
+		}
+		
+		override public function disable():void
+		{
+			facade.disable();
+		}
 	}
 }
