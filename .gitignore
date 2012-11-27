@@ -2,6 +2,9 @@
 ## Eclipse
 #################
 
+# build-path
+bin-debug/
+
 *.pydevproject
 #.project
 .metadata
