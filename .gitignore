@@ -3,7 +3,7 @@
 #################
 
 # build-path
-bin-debug/
+bin/
 
 *.pydevproject
 #.project
